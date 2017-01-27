@@ -2,6 +2,8 @@
 
 A git-centric way to manage your dotfiles.
 
+Inspired by this [hackernews comment by StreakyCobra](https://news.ycombinator.com/item?id=11071754).
+
 ## Perks
 
 * [x] **Minimal**: only needs `git` and `coreutils` (+ `e2fsprogs` if you want to use lock/unlock).
