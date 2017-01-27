@@ -49,7 +49,7 @@
 
     i-filept  = "!if test $# -eq 0; then "              \
                 "  git i-cfg ls-files "                 \
-                "    | sed -e \"s|^|$HOME/|g\"; "        \
+                "    | sed -e \"s|^|$HOME/|g\"; "       \
                 "else "                                 \
                 "  git i-cfg ls-files "                 \
                 "    | sed $(git i-pattern \"$@\") "    \
