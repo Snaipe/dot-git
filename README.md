@@ -24,7 +24,7 @@ A git-centric way to manage your dotfiles.
     $ source ~/.your_shell_rc
     $ dot checkout -f --
     $ dot remote add origin your_repo_url
-    $ dot --set-upstream
+    $ dot branch -u origin master
     ```
 
 3. You're done! Enjoy your new git-flavored dotfile manager.
