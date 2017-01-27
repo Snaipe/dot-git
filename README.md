@@ -28,6 +28,7 @@ A git-centric way to manage your dotfiles.
     ```
 
 3. You're done! Enjoy your new git-flavored dotfile manager.
+4. (optional) `dot rm README.md && dot commit -m "removed readme"`
 
 #### From an existing dot-git repo:
 
