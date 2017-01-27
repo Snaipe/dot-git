@@ -27,6 +27,8 @@ Inspired by this [hackernews comment by StreakyCobra](https://news.ycombinator.c
     $ dot checkout -f --
     $ dot remote add origin your_repo_url
     $ dot branch -u origin master
+    $ dot add .config/dotgit/config
+    $ dot commit -m "dot: added own remote to dotgit"
     ```
 
 3. You're done! Enjoy your new git-flavored dotfile manager.
