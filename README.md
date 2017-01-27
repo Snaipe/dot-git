@@ -23,7 +23,7 @@ Inspired by this [hackernews comment by StreakyCobra](https://news.ycombinator.c
 
     ```bash
     $ git clone --bare your_repo_url ~/.config/dotgit.
-    $ echo "alias dot='git --git-dir=\"\$HOME/.config/dotgit\" --work-tree=\"$HOME\" '" >> ~/.your_shell_rc
+    $ echo "alias dot='git --git-dir=\"\$HOME/.config/dotgit\" --work-tree=\"\$HOME\" '" >> ~/.your_shell_rc
     $ source ~/.your_shell_rc
     $ dot checkout -f --
     $ dot remote add origin your_repo_url
