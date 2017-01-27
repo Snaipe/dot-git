@@ -17,14 +17,16 @@ A git-centric way to manage your dotfiles.
 
 1. [Fork this repository](https://github.com/Snaipe/dot-git/fork), and copy its push url.
 2. Run the following commands (make sure to change `your_repo_url` and `your_shell_rc`):
-```bash
-$ git clone --bare your_repo_url ~/.config/dotgit.
-$ echo "alias dot='git --git-dir=\"\$HOME/.config/dotgit\" --work-tree=\"$HOME\" '" >> ~/.your_shell_rc
-$ source ~/.your_shell_rc
-$ dot checkout -f --
-$ dot remote add origin your_repo_url
-$ dot --set-upstream
-```
+
+    ```bash
+    $ git clone --bare your_repo_url ~/.config/dotgit.
+    $ echo "alias dot='git --git-dir=\"\$HOME/.config/dotgit\" --work-tree=\"$HOME\" '" >> ~/.your_shell_rc
+    $ source ~/.your_shell_rc
+    $ dot checkout -f --
+    $ dot remote add origin your_repo_url
+    $ dot --set-upstream
+    ```
+
 3. You're done! Enjoy your new git-flavored dotfile manager.
 
 #### From an existing dot-git repo:
