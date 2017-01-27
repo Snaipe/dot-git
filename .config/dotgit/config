@@ -21,7 +21,6 @@
     lock   = "!git i-filept \"$@\" | sudo xargs chattr +i #"
     unlock = "!git i-filept \"$@\" | sudo xargs chattr -i #"
     edit   = "!git i-edit $(git i-filept \"$@\") #"
-    add    = "!echo repl; git add"
 
     # internals
     i-cfg     = "!git --git-dir=\"$HOME/.config/dotgit/\" "
