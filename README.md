@@ -27,7 +27,6 @@ Inspired by this [hackernews comment by StreakyCobra](https://news.ycombinator.c
     $ source ~/.your_shell_rc
     $ dot checkout -f --
     $ dot remote add origin your_repo_url
-    $ dot branch -u origin master
     $ dot add .config/dotgit/config
     $ dot commit -m "dot: added own remote to dotgit"
     ```
