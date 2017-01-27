@@ -1,0 +1,27 @@
+.dotfiles/
+
+# Nixes
+.cache/
+.trash/
+.Trash-*
+
+# MacOS
+._*
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+
+# Swap
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
+*~
+\#*\#
+.\#*
