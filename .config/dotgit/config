@@ -41,7 +41,8 @@
                 "fi; "                                                          \
                 "fmt='$(stat --format \"%A %N\" \"@\" | cut -c 2- )'; "         \
                 "if [ \"$(git config dotfiles.lockFiles)\" = yes ]; then "      \
-                "  fmt='$(lsattr -d \"@\" | cut -c 5)'\"$fmt\"; "               \
+                "  fmt='$( (lsattr -d \"@\" 2>/dev/null "                       \
+                "           || echo '----l') | cut -c 5)'\"$fmt\"; "            \
                 "fi; "                                                          \
                 "cd \"$HOME\"; "                                                \
                 "eval $cmd | xargs -I@ sh -c \"echo $fmt\"; #"
