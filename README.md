@@ -7,8 +7,9 @@ Inspired by this [hackernews comment by StreakyCobra](https://news.ycombinator.c
 ## Perks
 
 * [x] **Minimal**: only needs `git` and `coreutils` (+ `e2fsprogs` if you want to use lock/unlock).
-* [x] **No symlinks**: git manages your files directly where they are.
+* [x] **No symlinks**: git manages your files inplace.
 * [x] **Runnable from any directory**: no need to `cd ~` before doing some changes.
+* [x] **Git-powered**: git commands are used to manage your files.
 * [x] **Useful aliases**: extended with repo-specific aliases like `files` and `edit`.
 
 ## Quick Start
