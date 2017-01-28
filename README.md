@@ -22,7 +22,7 @@ Inspired by this [hackernews comment by StreakyCobra](https://news.ycombinator.c
 2. Run the following commands (make sure to change `your_repo_url` and `your_shell_rc`):
 
     ```bash
-    $ git clone --bare your_repo_url ~/.config/dotgit.
+    $ git clone --bare your_repo_url ~/.config/dotgit
     $ echo "alias dot='git --git-dir=\"\$HOME/.config/dotgit\" --work-tree=\"\$HOME\" '" >> ~/.your_shell_rc
     $ source ~/.your_shell_rc
     $ dot checkout -f --
@@ -38,7 +38,7 @@ Inspired by this [hackernews comment by StreakyCobra](https://news.ycombinator.c
 
 Run the following commands (make sure to change `your_repo_url` and `your_shell_rc`):
 ```bash
-$ git clone --bare your_repo_url .config/dotgit.
+$ git clone --bare your_repo_url .config/dotgit
 $ git --git-dir="$HOME/.config/dotgit" --work-tree="$HOME" checkout -f --
 $ source ~/.your_shell_rc
 ```
