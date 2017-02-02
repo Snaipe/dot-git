@@ -30,7 +30,8 @@
                 "   --git-dir=\"$HOME/.config/dotgit/\" "   \
                 "   \"$cmd\" \"$@\" #"
 
-    i-pattern = "!printf ' -e \\|%s|!d ' \"$@\" #"
+    i-pattern = "!printf ' -e \\|%s|!d ' \"$@\" "           \
+                "  | sed -E -e 's/^\\s*//' -e 's/\\s*$//' #"
 
     i-splitl  = "!export IFS=\"$(printf '\\n\\r')\"; echo \"$*\" #"
 
