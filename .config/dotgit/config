@@ -5,10 +5,12 @@
 
 # Push/pull behaviour
 [push]
-    default = current
+    default = matching
     recurseSubmodules = on-demand
 [pull]
     rebase = true
+[rebase]
+    autoStash = true
 
 # Track origin/master
 [branch "master"]
