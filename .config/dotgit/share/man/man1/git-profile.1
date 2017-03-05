@@ -1,0 +1,144 @@
+'\" t
+.\"     Title: dot-profile
+.\"    Author: Franklin "Snaipe" Mathieu <me@snai.pe>
+.\"      Date: 27/02/2017
+.\"  Language: English
+.\"
+.TH "DOT\-PROFILE" "1" "27/02/2017" "Dot-Git" "Dot-Git"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+dot-profile \- Manage dot profiles
+.SH "SYNOPSIS"
+.sp
+.nf
+\fIdot profile\fR run <profile\-name> [<cmd\-arg>\&...]
+\fIdot profile\fR add <profile\-name> [<branch>]
+\fIdot profile\fR rm [\-f|\-\-force] <profile\-name>...
+\fIdot profile\fR switch <profile\-name>
+\fIdot profile\fR list
+\fIdot profile\fR foreach [\-q|\-\-quiet] <git-command> [<arg>\&...]
+.fi
+.sp
+.SH "DESCRIPTION"
+.sp
+Manage multiple profiles linked to a single repository\&.
+
+A dot profile is the application of a worktree (see \fBgit-worktree\fR(1))
+based off a (usually orphaned) branch on the top level directory of the repository.
+
+This means that multiple git branch can track their own separate views of the
+repository tree, while still coexisting with each other.
+
+For instance, one could have a branch tracking their vim configuration,
+and another one tracking their email configuration. They could add a profile
+based off their vim branch on one machine, the email branch on another,
+and two profiles based off each branch on a third.
+
+.SH "COMMANDS"
+.IP \fBrun\fR
+Run a git command on the work tree of the profile identified by <profile\-name>\&.
+.sp
+\fIrun\fR can optionally be omitted when <profile\-name> is specified\&.
+
+.IP \fBadd\fR
+Add a new profile, or link an existing one\&.
+.sp
+If <branch> is specified, base the profile worktree off the specified branch --
+otherwise, the worktree branch is assumed to be dot\-<profile\-name>\&.
+.sp
+If the worktree branch does not exist, it is created as an orphan branch\&.
+If it exists, the branch is checked out on the top level directory.
+
+.IP \fBrm\fR
+Remove one or multiple profiles and all files tracked by their revisions.
+.RS 4
+.IP "-f | --force" 16
+Do not ask for confirmation.
+.RE
+
+.IP \fBswitch\fR
+Select the profile as the default target for git commands\&.
+
+.IP \fBlist\fR
+List all linked profiles.
+
+.IP \fBforeach\fR
+Run a git command on each profile worktree.
+.RS 4
+.IP "-q | --quiet" 16
+Do not print the executed command for each profile.
+.RE
+
+.SH "EXAMPLE"
+
+Assume the following directory structore for \fB$HOME\fR:
+
+    .
+    |-- .config
+    |   |-- dotgit
+    |   |   `-- ...
+    |   `-- nvim
+    |       `-- init.vim
+    `-- .vim
+        `-- vimrc
+
+Here, \fI~/.vim/\fR contains configuration files for the \fBvim(1)\fR editor,
+while \fI~/.config/nvim/\fR contains configuration files for the \fBnvim(1)\fR
+editor.
+
+Suppose that you have \fBnvim(1)\fR installed on your home computer, but only
+have \fBvim(1)\fR available on a server. Having both configurations on the
+server is not desired.
+
+The solution, for this situation, is to use two profiles: one for vim, one for
+nvim.
+
+First, we create a nvim profile:
+
+    \fIhome\fR$ dot profile add nvim
+
+Then, we commit our nvim configuration:
+
+    \fIhome\fR$ dot profile nvim add .config/nvim/
+    \fIhome\fR$ dot profile nvim commit -m "nvim: added initial configuration"
+
+We do the same for the vim profile:
+
+    \fIhome\fR$ dot profile add vim
+    \fIhome\fR$ dot profile vim add .vim/
+    \fIhome\fR$ dot profile vim commit -m "vim: added initial configuration"
+
+Finally, we push the newly created branches on our remote:
+
+    \fIhome\fR$ dot push origin dot-vim dot-nvim
+
+On the server, we fetch the remote, and add a profile for the dot-vim branch:
+
+    \fIserver\fR$ dot fetch origin
+    \fIserver\fR$ dot branch -t dot-vim origin/dot-vim
+    \fIserver\fR$ dot profile add vim
+
+.SH "SEE ALSO"
+.sp
+\fBgit-worktree\fR(1)
+.SH "DOT"
+.sp
+Part of the \fBdot-git\fR(1) utility.

@@ -22,12 +22,15 @@
     unlock = "!git i-filept \"$@\" | sudo xargs chattr -i #"
     edit   = "!git i-edit $(git i-filept \"$@\") #"
 
+    profiles = profile ls
+    pf       = profile
+
     # internals
-    i-cfg     = "!git --git-dir=\"$HOME/.config/dotgit/\" "
+    i-cfg     = "!git --git-dir=\"$GIT_DIR\" "
 
     i-sudo    = "!cmd=\"$1\"; shift; "                      \
                 "sudo -E git "                              \
-                "   --git-dir=\"$HOME/.config/dotgit/\" "   \
+                "   --git-dir=\"$GIT_DIR\" "                \
                 "   \"$cmd\" \"$@\" #"
 
     i-pattern = "!printf ' -e \\|%s|!d ' \"$@\" "           \
@@ -36,26 +39,39 @@
     i-splitl  = "!export IFS=\"$(printf '\\n\\r')\"; echo \"$*\" #"
 
     i-files   = "!if test $# -eq 0; then "                                      \
-                "  cmd='git i-cfg ls-files'; "                                  \
+                "  lsf='i-cfg ls-files'; "                                      \
                 "else "                                                         \
-                "  cmd='git i-cfg ls-files | sed -E $(git i-pattern \"$@\")'; " \
+                "  lsf='i-cfg ls-files | sed -E $(git i-pattern \"$@\")'; "     \
                 "fi; "                                                          \
+                "cmd=\"( git $lsf; \"; "                                        \
+                "for p in $(git profiles); do "                                 \
+                "  cmd=\"${cmd}git profile $p $lsf; \";"                        \
+                "done; "                                                        \
+                "cmd=\"${cmd}\"')';"                                            \
                 "fmt='$(stat --format \"%A %N\" \"@\" | cut -c 2- )'; "         \
                 "if [ \"$(git config dotfiles.lockFiles)\" = yes ]; then "      \
                 "  fmt='$( (lsattr -d \"@\" 2>/dev/null "                       \
                 "           || echo '----l') | cut -c 5)'\"$fmt\"; "            \
                 "fi; "                                                          \
-                "cd \"$HOME\"; "                                                \
-                "eval $cmd | xargs -I@ sh -c \"echo $fmt\"; #"
+                "cd \"$(git rev-parse --show-toplevel)\"; "                     \
+                "eval $cmd | sort | xargs -I@ sh -c \"echo $fmt\"; #"
 
-    i-filept  = "!if test $# -eq 0; then "              \
-                "  git i-cfg ls-files "                 \
-                "    | sed -e \"s|^|$HOME/|g\"; "       \
-                "else "                                 \
-                "  git i-cfg ls-files "                 \
-                "    | sed $(git i-pattern \"$@\") "    \
-                "    | sed -e \"s|^|$HOME/|g\"; "       \
-                "fi #"
+
+    i-filept  = "!worktree=\"$(git rev-parse --show-toplevel)\"; "              \
+                "if test $# -eq 0; then "                                       \
+                "  lsf='i-cfg ls-files "                                        \
+                "    | sed -e \"s|^|$worktree/|g\"'; "                          \
+                "else "                                                         \
+                "  lsf='i-cfg ls-files "                                        \
+                "    | sed $(git i-pattern \"$@\") "                            \
+                "    | sed -e \"s|^|$worktree/|g\"'; "                          \
+                "fi; "                                                          \
+                "cmd=\"( git $lsf; \"; "                                        \
+                "for p in $(git profiles); do "                                 \
+                "  cmd=\"${cmd}git profile $p $lsf; \";"                        \
+                "done; "                                                        \
+                "cmd=\"${cmd}\"')';"                                            \
+                "eval $cmd; #"
 
     i-askpick = "!git i-splitl \"$@\" | cat -n && echo -n 'Pick the one to edit: ' #"
 

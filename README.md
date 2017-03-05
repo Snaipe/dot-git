@@ -9,6 +9,7 @@ Inspired by this [hackernews comment by StreakyCobra](https://news.ycombinator.c
 * [x] **Minimal**: only needs `git` and `coreutils` (+ `e2fsprogs` if you want to use lock/unlock).
 * [x] **No symlinks**: git manages your files inplace.
 * [x] **Runnable from any directory**: no need to `cd ~` before doing some changes.
+* [x] **Profile management**: Keep all your configs in a repository, only link what you need (run `dot profile --help` for info).
 * [x] **Git-powered**: git commands are used to manage your files.
 * [x] **Useful aliases**: extended with repo-specific aliases like `files` and `edit`.
 
@@ -23,7 +24,7 @@ Inspired by this [hackernews comment by StreakyCobra](https://news.ycombinator.c
 
     ```bash
     $ git clone --bare your_repo_url ~/.config/dotgit
-    $ echo "alias dot='git --git-dir=\"\$HOME/.config/dotgit\" --work-tree=\"\$HOME\" '" >> ~/.your_shell_rc
+    $ echo "alias dot='PATH=\"\$HOME/.config/dotgit:\$PATH\" git --git-dir=\"\$HOME/.config/dotgit/repo\" --work-tree=\"\$HOME\"'" >> ~/.your_shell_rc
     $ source ~/.your_shell_rc
     $ dot checkout -f --
     $ dot remote add origin your_repo_url
@@ -81,9 +82,30 @@ irw-r--r-- '.vimrc'
 $ dot edit .vimrc       # dot edit will unlock the file and re-lock it after editing
 ```
 
+* Make a profile for your x11 config
+
+```bash
+$ dot profile add x11
+$ dot profile x11 add .xinitrc .Xresources
+$ dot profile x11 commit -m "added my xorg configuration"
+$ dot push origin dot-x11
+```
+
+* Link a profile on another machine
+
+```bash
+$ dot fetch origin
+$ dot branch -t dot-x11 origin/dot-x11
+$ dot profile add x11
+```
+
 ## F.A.Q.
 
 **Q: I need to call `dot` to draw graphs, but you thoughtlessly
    replaced it with an alias. What do I do?**  
 A: I don't know about you, but I only *need* to call dot once every full moon, so
    when I do, I just call `\dot`, which bypasses alias expansion. You're welcome.  
+
+**Q: `dot profile --help` doesn't seem to work, how can I read that manual page?**  
+A: Your manpath program may not be searching the PATH variable. Try setting
+   `MANPATH=":$HOME/.config/dotgit/share/man"`.

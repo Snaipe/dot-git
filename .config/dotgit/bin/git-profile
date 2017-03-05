@@ -1,0 +1,243 @@
+#!/bin/sh -e
+
+# always use the current work tree for our profiles
+export GIT_WORK_TREE="$(git rev-parse --show-toplevel)"
+
+# we perform dangerous operations on paths like $GIT_DIR/*, so we
+# check that the variable isn't empty to prevent an unfortunate rm -Rf /.
+if [ -z "$GIT_DIR" ]; then
+    >&2 echo "GIT_DIR is not set; we cannot continue safely."
+    exit 1
+fi
+
+if [ -f "$GIT_DIR"/commondir ]; then
+    export GIT_DIR="$GIT_DIR/$(cat "$GIT_DIR/commondir")"
+fi
+
+export GIT_DIR="$(perl -MCwd -e 'print Cwd::realpath($ENV{GIT_DIR}),qq<\n>')"
+
+if [ -z "$GIT_DIR" ]; then
+    >&2 echo "GIT_DIR is not set; we cannot continue safely."
+    exit 1
+fi
+
+cmd=${1:-ls}
+
+getopt() {
+    # these need to be tab-indented
+    local prelude="$(cat <<-'EOF'
+	local i=1 plain;
+	while [ $i -le $# ]; do
+	    eval "local arg=\"\${$i}\"";
+	    eval "local opt=\"\${$((i+1))}\"";
+	    case "$arg" in
+	EOF
+    )"
+    local epilogue="$(cat <<-'EOF'
+	        --) i=$((i+1)); break;;
+	        -) plain="$plain '$arg'";;
+	        -*) >&2 echo "dot: Unsupported option '$arg'."; exit 3;;
+	        *) plain="$plain '$arg'";;
+	    esac;
+	    i=$((i+1));
+	done;
+	while [ $i -le $# ]; do
+	    eval "local arg=\"\${$i}\"";
+	    plain="$plain '$arg'";
+	    i=$((i+1));
+	done;
+	eval "set ${plain:-''}"
+	EOF
+    )"
+    local args="" i
+    for i; do
+        args="$args$i;; "
+    done
+
+    printf '%s' "$prelude $args $epilogue"
+}
+
+noopt() {
+    cat <<-'EOF'
+	case "$1" in
+	    -*) >&2 echo "dot: Unsupported option '$1'."; exit 3;;
+	esac
+	EOF
+}
+
+ask() {
+    read -p "$1 [y/N]: " yn
+    case $yn in
+        [Yy]*|yes);;
+        *) exit 1;;
+    esac
+}
+
+set_profile() {
+    profile=$1
+    if [ "$profile" = master ]; then
+        workdir="$GIT_DIR"
+        branch=master
+    else
+        workdir="$GIT_DIR/worktrees/dot-$profile"
+        branch="dot-$profile"
+    fi
+}
+
+mkworktree() {
+    workdir="$1"; shift
+    if ! rev="$(git rev-parse --symbolic-full-name --verify --quiet "$1")"; then
+        >&2 echo "dot: Revision '$1' does not exist."
+        exit 1
+    fi
+
+    trap 'rm -rf "$tmpdir" "$workdir"' EXIT
+    tmpdir=$(mktemp -d 2>/dev/null)
+
+    git worktree add "$tmpdir/dot-$profile" HEAD >/dev/null
+    rm -f "$workdir"/gitdir "$workdir"/index
+    touch "$workdir"/locked
+    if [ -z "$rev" ]; then
+        rev="$(git rev-parse "$1")"
+        git rev-parse $rev > "$workdir"/HEAD
+    else
+        git --git-dir="$workdir" symbolic-ref HEAD $rev
+    fi
+
+    rm -rf "$tmpdir"
+    trap - EXIT
+}
+
+branch_exists() {
+    git show-ref --quiet --verify "refs/heads/$1"
+}
+
+rev_exists() {
+    git rev-parse --verify --quiet "$1" >/dev/null
+}
+
+# Commands
+
+dot_add() {
+    eval $(getopt)
+
+    set_profile "$@"; shift
+    if [ -d "$workdir" ]; then
+        >&2 echo "dot: Profile '$profile' is already linked."
+        exit 3
+    fi
+
+    rev=${1:-$branch}
+
+    mkworktree "$workdir" "$rev"
+    if rev_exists "$rev"; then
+        git --git-dir="$workdir" reset --hard "$rev"
+        echo "Linked profile '$profile' based off '$rev'."
+        exit 0
+    fi
+    echo "Created new orphan branch '$branch' for profile '$profile'."
+}
+
+dot_rm() {
+    eval $(getopt                   \
+        '-f|--force) _force=1'      \
+    )
+
+    for f; do
+        set_profile "$f"; shift
+        if [ "$profile" = master ]; then
+            >&2 echo "dot: Cannot unlink master profile."
+            exit 3
+        fi
+        if [ ! -d "$workdir" ]; then
+            >&2 echo "dot: Unknown profile '$profile'."
+            exit 3
+        fi
+
+        if [ -z "$_force" ]; then
+            ask "Remove all files belonging to profile '$profile'?"
+        fi
+
+        git --git-dir="$workdir" reset
+
+        if rev_exists "$branch"; then
+            git --git-dir="$workdir" ls-files -z | xargs -0 rm -f
+            git --git-dir="$workdir" ls-tree --name-only -d -r -z HEAD \
+                | sort -rz | xargs -0 rmdir 2>/dev/null || true
+        fi
+
+        rm -rf "$workdir"
+    done
+}
+
+dot_run() {
+    eval $(noopt)
+    set_profile "$1"; shift
+    eval $(noopt)
+
+    if [ ! -d "$workdir" ]; then
+        >&2 echo "dot: Unknown profile '$profile'."
+        exit 3
+    fi
+
+    exec git --git-dir="$workdir" "$@"
+}
+
+dot_switch() {
+    eval $(getopt)
+
+    set_profile "$1"; shift
+    repo=$(echo $workdir | sed -e "s|^$GIT_DIR|.|")
+    ln -snf $repo $GIT_DIR/repo
+    echo "Switched to profile '$profile'."
+}
+
+dot_ls() {
+    eval $(getopt)
+
+    if [ -d $GIT_DIR/worktrees ] && [ -x $GIT_DIR/worktrees ]; then
+        cd $GIT_DIR/worktrees
+        find . -mindepth 1 -maxdepth 1 -type d  \
+           | grep -E '^./dot-'                  \
+           | sed 's|^./dot-||'
+    fi
+    echo "master"
+}
+
+dot_foreach() {
+    # this needs to be tab-indented
+    local cmd="$(cat <<-'EOF'
+	pat="s/'/'\\\\''/g";
+	echo -n '$ ';
+	for f; do
+	    case "$f" in
+	        *[\ \$]*) echo -n "'$(echo "$f" | sed -e "$pat")' ";;
+	        *) echo -n "$f ";;
+	    esac;
+	done;
+	echo;
+	EOF
+    )"
+
+    exec_cmd='shift; git "$@"'
+    cmd="$cmd $exec_cmd"
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -q|--quiet) cmd="$exec_cmd";;
+            -*) >&2 echo "dot: Unsupported option '$1'."; return 3;;
+            *) break;;
+        esac
+        shift
+    done
+
+    dot_ls | xargs -I% sh -c "$cmd" "" dot profile run % "$@"
+}
+
+if ! type dot_$cmd | grep -qi function; then
+    cmd=run
+elif [ $# -ge 1 ]; then
+    shift
+fi
+
+"dot_$cmd" "$@"
