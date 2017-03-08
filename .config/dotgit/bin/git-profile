@@ -121,21 +121,35 @@ rev_exists() {
 dot_add() {
     eval $(getopt)
 
-    set_profile "$@"; shift
-    if [ -d "$workdir" ]; then
-        >&2 echo "dot: Profile '$profile' is already linked."
-        exit 3
-    fi
+    for f; do
+        profile=$(echo "$f" | cut -d: -f2)
+        if [ -z "$profile" ]; then
+            >&2 echo "dot: Invalid syntax for '$f'."
+            exit 3
+        fi
 
-    rev=${1:-$branch}
+        if [ "$profile" = "$f" ]; then
+            echo "1"
+            set_profile "$f"
+        else
+            echo "2"
+            set_profile "$profile"
+            rev=$(echo "$f" | cut -d: -f1)
+        fi
+        rev=${rev:-$branch}
 
-    mkworktree "$workdir" "$rev"
-    if rev_exists "$rev"; then
-        git --git-dir="$workdir" reset --hard "$rev"
-        echo "Linked profile '$profile' based off '$rev'."
-        exit 0
-    fi
-    echo "Created new orphan branch '$branch' for profile '$profile'."
+        if [ -d "$workdir" ]; then
+            >&2 echo "dot: Profile '$profile' is already linked."
+        else
+            mkworktree "$workdir" "$rev"
+            if rev_exists "$rev"; then
+                git --git-dir="$workdir" reset --hard "$rev"
+                echo "Linked profile '$profile' based off '$rev'."
+            else
+                echo "Created new orphan branch '$branch' for profile '$profile'."
+            fi
+        fi
+    done
 }
 
 dot_rm() {

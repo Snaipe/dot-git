@@ -30,7 +30,7 @@ dot-profile \- Manage dot profiles
 .sp
 .nf
 \fIdot profile\fR run <profile\-name> [<cmd\-arg>\&...]
-\fIdot profile\fR add <profile\-name> [<branch>]
+\fIdot profile\fR add [[<revision>]:]<profile\-name>...
 \fIdot profile\fR rm [\-f|\-\-force] <profile\-name>...
 \fIdot profile\fR switch <profile\-name>
 \fIdot profile\fR list
@@ -59,13 +59,14 @@ Run a git command on the work tree of the profile identified by <profile\-name>\
 \fIrun\fR can optionally be omitted when <profile\-name> is specified\&.
 
 .IP \fBadd\fR
-Add a new profile, or link an existing one\&.
+Add new profiles, or link an existing ones\&.
 .sp
-If <branch> is specified, base the profile worktree off the specified branch --
-otherwise, the worktree branch is assumed to be dot\-<profile\-name>\&.
+If <revision> is specified, base the profile worktree off the specified
+revision -- otherwise, the worktree revision is assumed to be a branch
+named dot\-<profile\-name>\&.
 .sp
-If the worktree branch does not exist, it is created as an orphan branch\&.
-If it exists, the branch is checked out on the top level directory.
+If the dot\-<profile\-name> branch does not exist, it is created as an
+orphan branch\&.
 
 .IP \fBrm\fR
 Remove one or multiple profiles and all files tracked by their revisions.
