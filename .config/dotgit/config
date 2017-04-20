@@ -45,10 +45,14 @@
                 "else "                                                         \
                 "  lsf='i-cfg ls-files | sed -E $(git i-pattern \"$@\")'; "     \
                 "fi; "                                                          \
-                "cmd=\"( git $lsf; \"; "                                        \
-                "for p in $(git profiles); do "                                 \
-                "  cmd=\"${cmd}git profile $p $lsf; \";"                        \
-                "done; "                                                        \
+                "cmd=\"( \"; "                                                  \
+                "if [ ! -f \"$GIT_DIR\"/commondir ]; then "                     \
+                "   for p in $(git profiles); do "                              \
+                "     cmd=\"${cmd}git profile $p $lsf; \";"                     \
+                "   done; "                                                     \
+                "else "                                                         \
+                "   cmd=\"( git $lsf; \"; "                                     \
+                "fi; "                                                          \
                 "cmd=\"${cmd}\"')';"                                            \
                 "fmt='$(stat --format \"%A %N\" \"@\" | cut -c 2- )'; "         \
                 "if [ \"$(git config dotfiles.lockFiles)\" = yes ]; then "      \
@@ -68,10 +72,14 @@
                 "    | sed $(git i-pattern \"$@\") "                            \
                 "    | sed -e \"s|^|$worktree/|g\"'; "                          \
                 "fi; "                                                          \
-                "cmd=\"( git $lsf; \"; "                                        \
-                "for p in $(git profiles); do "                                 \
-                "  cmd=\"${cmd}git profile $p $lsf; \";"                        \
-                "done; "                                                        \
+                "cmd=\"( \"; "                                                  \
+                "if [ ! -f \"$GIT_DIR\"/commondir ]; then "                     \
+                "   for p in $(git profiles); do "                              \
+                "     cmd=\"${cmd}git profile $p $lsf; \";"                     \
+                "   done; "                                                     \
+                "else "                                                         \
+                "   cmd=\"( git $lsf; \"; "                                     \
+                "fi; "                                                          \
                 "cmd=\"${cmd}\"')';"                                            \
                 "eval $cmd; #"
 
