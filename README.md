@@ -24,9 +24,9 @@ Inspired by this [hackernews comment by StreakyCobra](https://news.ycombinator.c
 
     ```bash
     $ git clone --bare your_repo_url ~/.config/dotgit
+    $ git --git-dir="$HOME/.config/dotgit" --work-tree="$HOME" checkout -f --
     $ echo "alias dot='PATH=\"\$HOME/.config/dotgit/bin:\$PATH\" git --git-dir=\"\$HOME/.config/dotgit/repo\" --work-tree=\"\$HOME\"'" >> ~/.your_shell_rc
     $ source ~/.your_shell_rc
-    $ dot checkout -f --
     $ dot remote add origin your_repo_url
     $ dot add .config/dotgit/config
     $ dot commit -m "dot: added own remote to dotgit"
@@ -39,7 +39,7 @@ Inspired by this [hackernews comment by StreakyCobra](https://news.ycombinator.c
 
 Run the following commands (make sure to change `your_repo_url` and `your_shell_rc`):
 ```bash
-$ git clone --bare your_repo_url .config/dotgit
+$ git clone --bare your_repo_url ~/.config/dotgit
 $ git --git-dir="$HOME/.config/dotgit" --work-tree="$HOME" checkout -f --
 $ source ~/.your_shell_rc
 ```
