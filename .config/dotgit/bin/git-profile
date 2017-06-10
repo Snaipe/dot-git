@@ -86,10 +86,6 @@ set_profile() {
 
 mkworktree() {
     workdir="$1"; shift
-    if ! rev="$(git rev-parse --symbolic-full-name --verify --quiet "$1")"; then
-        >&2 echo "dot: Revision '$1' does not exist."
-        exit 1
-    fi
 
     trap 'rm -rf "$tmpdir" "$workdir"' EXIT
     tmpdir=$(mktemp -d 2>/dev/null)
@@ -97,11 +93,11 @@ mkworktree() {
     git worktree add "$tmpdir/dot-$profile" HEAD >/dev/null
     rm -f "$workdir"/gitdir "$workdir"/index
     touch "$workdir"/locked
-    if [ -z "$rev" ]; then
-        rev="$(git rev-parse "$1")"
-        git rev-parse $rev > "$workdir"/HEAD
+    if rev="$(git rev-parse --symbolic-full-name --verify --quiet "$1")"; then
+        git rev-parse "$rev" > "$workdir"/HEAD
     else
-        git --git-dir="$workdir" symbolic-ref HEAD $rev
+	rev="$1"; shift
+        git --git-dir="$workdir" symbolic-ref HEAD "refs/heads/$rev"
     fi
 
     rm -rf "$tmpdir"
@@ -129,10 +125,8 @@ dot_add() {
         fi
 
         if [ "$profile" = "$f" ]; then
-            echo "1"
             set_profile "$f"
         else
-            echo "2"
             set_profile "$profile"
             rev=$(echo "$f" | cut -d: -f1)
         fi
