@@ -242,7 +242,7 @@ dot_foreach() {
     dot_ls | xargs -I% sh -c "$cmd" "" dot profile run % "$@"
 }
 
-if ! type dot_$cmd | grep -qi function; then
+if ! LC_ALL=C type dot_$cmd 2>/dev/null | grep -qi function; then
     cmd=run
 elif [ $# -ge 1 ]; then
     shift
